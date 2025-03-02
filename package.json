@@ -1,0 +1,26 @@
+{
+  "name": "u05-restapi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArtemisDava/u05-restapi.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ArtemisDava/u05-restapi/issues"
+  },
+  "homepage": "https://github.com/ArtemisDava/u05-restapi#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.8"
+  }
+}
