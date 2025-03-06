@@ -1,6 +1,6 @@
   // Utility function to transform category data
 
-  const transform={
+  const transform = {
   transformCategory: (category) => {
     return {
       id: category.id,
