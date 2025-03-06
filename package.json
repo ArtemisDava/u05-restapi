@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
+    "seed": "node src/seeds/index.js",
     "test": "mocha --timeout 10000 --file ./test/setup.js ./test/*.test.js",
     "format": "prettier --write ."
   },
