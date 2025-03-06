@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
-import { ingredientItemSchema, ingredientQuantitySchema } from "./ingredient.model";
+import {
+  ingredientItemSchema,
+  ingredientQuantitySchema,
+} from "./ingredient.model";
 import { recipeItemSchema } from "./recipe.model";
 
 const userSchema = new mongoose.Schema(
@@ -13,5 +16,5 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
- 
+
 export default mongoose.model("User", userSchema);
