@@ -7,16 +7,16 @@ const router = express.Router();
 // Protected routes for authenticated admins
 router.put(
   "/v1/admin/categories/:categoryID",
-  categoryController.updateCategoryByAdmin
+  categoryController.updateCategory
 );
 router.delete(
   "/v1/admin/categories/:categoryID",
-  categoryController.deleteCategoryByAdmin
+  categoryController.deleteCategory
 );
-router.post("/v1/admin/categories", categoryController.createCategoryByAdmin);
+router.post("/v1/admin/categories", categoryController.createCategory);
 
 // Public routes
 router.get("/v1/categories/:categoryID", categoryController.getCategoryById);
-router.get("/v1/categories", categoryController.getAllCategories);
+router.get("/v1/categories", categoryController.getCategories);
 
 export default router;

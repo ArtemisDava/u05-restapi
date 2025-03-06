@@ -1,32 +1,14 @@
-import mongoose from "mongoose";
+import errorHandler from "./error.js";
 
-const validate= {
-    Id: (value, fieldName, res) => {
-        if (isNaN(value)) {
-            res.status(400).json({
-            success: false,
-            message: `${fieldName} is required`,
-            });
-            return false;
-        }
-        return true;
-        },
+const checkIfExists = async (model, query, res) => {
+  const exists = await model.countDocuments(query) !== 0;
+  if (exists)
+    return errorHandler(res, 400, `${model.modelName} already exists`);
 
-  validateField: (value, fieldName, res) => {
-    if (!value) {
-      res.status(400).json({
-        success: false,
-        message: `${fieldName} is required`,
-      });
-      return false;
-    }
-    return true;
-  },
+  return false;
 };
 
-
-
-export default validate;
+export default checkIfExists;
 
 
 

@@ -1,14 +1,22 @@
   // Utility function to transform category data
 
-  const transform = {
-  transformCategory: (category) => {
-    return {
-      id: category.id,
-      name: category.name,
-      image: category.image,
-      description: category.description,
-    };
-  },
+const filterFields = (data, fields) => {
+  let isObject = false;
+  if (!Array.isArray(data)) {
+    isObject = true;
+    data = [data];
+  }
+
+  data = data.map((item) => {
+    const newItem = {};
+    fields.forEach((field) => {
+      newItem[field] = item[field];
+    });
+
+    return newItem;
+  });
+
+  return isObject ? data[0] : data;
 };
 
-export default transform;
+export default filterFields;

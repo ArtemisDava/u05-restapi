@@ -1,9 +1,8 @@
-const errorHandler = (res, error, code, message) => {
-  console.error(message, error);
+const errorHandler = (res, code, message) => {
+  console.error(message);
   res.status(code).json({
     success: false,
-    message,
-    error: error.message,
+    error: message
   });
 };
 
