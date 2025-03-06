@@ -1,4 +1,4 @@
-import Category from "../models/category.model.js"; //TO-DO
+import Category from "../models/category.model.js"; 
 import validate from "./utils/validators.js";
 import errorHandler from "./utils/error.js";
 import transform from "./utils/transform-data.js";
