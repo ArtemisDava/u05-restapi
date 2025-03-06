@@ -1,10 +1,14 @@
 import mongoose from "mongoose";
-import { assignIncrementalId } from "./utils/incrementalId";
-import { validatePattern, validateUnique, validateIdExists } from "./utils/validators";
+import { assignIncrementalId } from "./utils/incrementalId.js";
+import {
+  validatePattern,
+  validateUnique,
+  validateIdExists,
+} from "./utils/validators.js";
 
 const categorySchema = new mongoose.Schema(
   {
-    id: { type: Number, required: true, unique: true },
+    id: { type: Number, unique: true },
     name: {
       type: String,
       required: true,
@@ -37,18 +41,18 @@ assignIncrementalId(categorySchema);
 
 const categoryItemSchema = new mongoose.Schema(
   {
-    id: {
-      type: Number,
+    name: {
+      type: String,
       ref: "Category",
       validate: {
         async validator(value) {
           return await validateIdExists("Category", value);
         },
-        message: "Category id does not exist",
+        message: "Category name does not exist",
       },
     },
   },
-  { _id: false }
+  { _id: true }
 );
 
 export default mongoose.model("Category", categorySchema);
