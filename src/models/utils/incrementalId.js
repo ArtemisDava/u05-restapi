@@ -19,5 +19,4 @@ function assignIncrementalId(schema) {
 }
 
 // module.exports = { assignIncrementalId };
-exports.assignIncrementalId = assignIncrementalId;
-
+export { assignIncrementalId };

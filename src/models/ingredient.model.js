@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
-import { assignIncrementalId } from "./utils/incrementalId";
-import { validatePattern, validateUnique, validateIdExists } from "./utils/validators";
+import { assignIncrementalId } from "./utils/incrementalId.js";
+import {
+  validatePattern,
+  validateUnique,
+  validateIdExists,
+} from "./utils/validators.js";
 
 const ingredientSchema = new mongoose.Schema(
   {
@@ -69,6 +73,3 @@ const ingredientItemSchema = new mongoose.Schema(
 
 export const Ingredient = mongoose.model("Ingredient", ingredientSchema);
 export { ingredientQuantitySchema, ingredientItemSchema };
-
-
-

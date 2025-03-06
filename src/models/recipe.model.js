@@ -1,8 +1,12 @@
-import mongoose from 'mongoose';
-import { assignIncrementalId } from './utils/incrementalId';
-import { validatePattern, validateUnique, validateIdExists } from './utils/validators';
-import { ingredientQuantitySchema } from './ingredient.model';
-import { categoryItemSchema } from './category.model';
+import mongoose from "mongoose";
+import { assignIncrementalId } from "./utils/incrementalId.js";
+import {
+  validatePattern,
+  validateUnique,
+  validateIdExists,
+} from "./utils/validators.js";
+import { ingredientQuantitySchema } from "./ingredient.model.js";
+import { categoryItemSchema } from "./category.model.js";
 
 const recipeSchema = new mongoose.Schema(
   {
@@ -12,9 +16,9 @@ const recipeSchema = new mongoose.Schema(
       required: true,
       validate: [
         validateUnique(
-          'Recipe',
-          'name',
-          'Recipe name must be unique (case-insensitive).'
+          "Recipe",
+          "name",
+          "Recipe name must be unique (case-insensitive)."
         ),
         validatePattern(
           /^[A-Z][A-Za-z0-9'-,. ]+$/,
@@ -46,17 +50,17 @@ const recipeItemSchema = new mongoose.Schema(
   {
     id: {
       type: Number,
-      ref: 'Recipe',
+      ref: "Recipe",
       validate: {
         async validator(value) {
-          return await validateIdExists('Recipe', value);
+          return await validateIdExists("Recipe", value);
         },
-        message: 'Recipe id does not exist',
+        message: "Recipe id does not exist",
       },
     },
   },
   { _id: false }
 );
 
-export const Recipe = mongoose.model('Recipe', recipeSchema);
+export const Recipe = mongoose.model("Recipe", recipeSchema);
 export { recipeItemSchema };
