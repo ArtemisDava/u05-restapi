@@ -1,7 +1,9 @@
 import Category from "../models/category.model.js"; 
-import checkIfExists from "./utils/validators.js";
+import { checkIfExists, parseId } from "./utils/validators.js";
 import errorHandler from "./utils/error.js";
 import filterFields from "./utils/transform-data.js";
+
+// TO-DO: sanitize inputs
 
 const fields = ['id', 'name', 'image', 'description'];
 
@@ -23,19 +25,12 @@ const categoryController = {
   },
 
   getCategoryById: async (req, res) => {
-    // TODO: Refactor to encapsulate into function
-    let categoryId = req.params.categoryID;
-
-    try {
-      categoryId = parseInt(categoryId);
-    } catch(error) {
-      errorHandler(res, 500, `Invalid category '${categoryID}'`);
-    }
+    const categoryId = parseId(req, res, "categoryID");
+    if (categoryId === null) return;
       
     try {
       let category = await Category.findOne({ id: categoryId });
-      if (!category)
-        return errorHandler(res, 404, "Category not found");
+      if (!category) return errorHandler(res, 404, `Category: '${categoryId}' not found`);
 
       category = filterFields(category, fields);
 
@@ -56,11 +51,10 @@ const categoryController = {
         return errorHandler(res, 400, "Name is required");
       }
 
-      // TODO: Sanitize inputs
-
       // Check if name already exists
-      let exists = await checkIfExists(Category, { name }, res);
-      if (exists) return;
+      let exists = await checkIfExists(Category, { name });
+      if (exists) 
+        return errorHandler(res, 400, `Category '${name}' already exists`);
 
       // Create new category
       const category = new Category({
@@ -82,38 +76,31 @@ const categoryController = {
   },
 
   updateCategory: async (req, res) => {
-    // TODO: Refactor to encapsulate into function
-    let categoryId = req.params.categoryID;
-
-    try {
-      categoryId = parseInt(categoryId);
-    } catch(error) {
-      errorHandler(res, 500, `Invalid category ID '${categoryID}'`);
-    }
+    const categoryId = parseId(req, res, "categoryID");
+    if (categoryId === null) return;
       
     try {
       const { name, image, description } = req.body;
 
       const category = await Category.findOne({ id: categoryId });
+      if (!category) return errorHandler(res, 404, `Category: '${categoryId}' not found`);
       
-      if (!category)
-        return errorHandler(res, 404, `Category '${categoryId}' not found`);
-
-      // TODO: Sanitize inputs
-
-      category.name = name || category.name;
-
-      // Check if name already exists
-      let exists = await checkIfExists(Category, { name: category.name }, res);
-      if (exists) return;
-
-      category.image = image || category.image;
-      category.description = description || category.description;
+      if(name){
+        let exists = await checkIfExists(Category, { name });
+        if (exists){
+          return errorHandler(res, 400, `'${name}' matches an existing category name!`
+          );
+        }
+        category.name = name;
+      }
+      
+      category.image = image ?? category.image;
+      category.description = description ?? category.description;
 
       try {
         await category.save();
       } catch (error) {
-        errorHandler(res, 500, error.message);
+        return errorHandler(res, 500, error.message);
       }
 
       res.status(200).json({ success: true, data: category });
@@ -123,14 +110,8 @@ const categoryController = {
   },
 
   deleteCategory: async (req, res) => {
-    // TODO: Refactor to encapsulate into function
-    let categoryId = req.params.categoryID;
-
-    try {
-      categoryId = parseInt(categoryId);
-    } catch(error) {
-      errorHandler(res, 500, `Invalid category ID '${categoryID}'`);
-    }
+    const categoryId = parseId(req, res, "categoryID");
+    if (categoryId === null) return;
 
     try {
       const deletedCount = (await Category.deleteOne({ id: categoryId })).deletedCount;
