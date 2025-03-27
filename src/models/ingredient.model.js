@@ -1,10 +1,24 @@
 import mongoose from "mongoose";
-import { assignIncrementalId } from "./utils/incrementalId";
-import { validatePattern, validateUnique, validateIdExists } from "./utils/validators";
+import { assignIncrementalId } from "./utils/incrementalId.js";
+import { validatePattern, validateUnique } from "./utils/validators.js";
 
+const ingredientQuantitySchema = new mongoose.Schema(
+  {
+    ingredient: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ingredient",
+      required: true,
+    },
+    quantity: { type: Number, required: true, min: 0 },
+    unit: {
+      type: String,
+    },
+  },
+  { _id: false }
+);
 const ingredientSchema = new mongoose.Schema(
   {
-    id: { type: Number, required: true, unique: true },
+    id: { type: Number, unique: true },
     name: {
       type: String,
       required: true,
@@ -21,54 +35,33 @@ const ingredientSchema = new mongoose.Schema(
         ),
       ],
     },
-    image: { type: String },
+    image: {
+      type: String,
+      validate: validatePattern(
+        /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))$/,
+        "Image URL must be a valid URL and end with one of the following extensions: png, jpg, jpeg, gif, svg"
+      ),
+    },
   },
   { timestamps: true }
 );
 
 assignIncrementalId(ingredientSchema);
 
-const ingredientQuantitySchema = new mongoose.Schema(
-  {
-    id: {
-      type: Number,
-      ref: "Ingredient",
-      validate: {
-        validator: async function (value) {
-          return await validateIdExists("Ingredient", value);
-        },
-        message: "Ingredient id does not exist",
-      },
-    },
-    quantity: { type: Number, required: true, min: 0 },
-    unit: {
-      type: String,
-      validate: validatePattern(
-        /^[a-zA-Z]+$/,
-        "Unit must contain only letters."
-      ),
-    },
-  },
-  { _id: false }
-);
+// const ingredientItemSchema = new mongoose.Schema(
+//   {
+//     id: {
+//       type: Number,
+//       validate: {
+//         validator: async function (value) {
+//           return await validateIfExists("Ingredient", value);
+//         },
+//         message: "Ingredient id does not exist",
+//       },
+//     },
+//   },
+//   { _id: false }
+// );
 
-const ingredientItemSchema = new mongoose.Schema(
-  {
-    id: {
-      type: Number,
-      validate: {
-        validator: async function (value) {
-          return await validateIdExists("Ingredient", value);
-        },
-        message: "Ingredient id does not exist",
-      },
-    },
-  },
-  { _id: false }
-);
-
-export const Ingredient = mongoose.model("Ingredient", ingredientSchema);
-export { ingredientQuantitySchema, ingredientItemSchema };
-
-
-
+export default mongoose.model("Ingredient", ingredientSchema);
+export { ingredientQuantitySchema };

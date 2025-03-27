@@ -1,20 +1,20 @@
-import mongoose from 'mongoose';
-import { assignIncrementalId } from './utils/incrementalId';
-import { validatePattern, validateUnique, validateIdExists } from './utils/validators';
-import { ingredientQuantitySchema } from './ingredient.model';
-import { categoryItemSchema } from './category.model';
+import mongoose from "mongoose";
+import { assignIncrementalId } from "./utils/incrementalId.js";
+import { validatePattern, validateUnique } from "./utils/validators.js";
+import { ingredientQuantitySchema } from "./ingredient.model.js";
 
 const recipeSchema = new mongoose.Schema(
   {
-    id: { type: Number, required: true, unique: true },
+    id: { type: Number, unique: true },
     name: {
       type: String,
       required: true,
+      unique: true,
       validate: [
         validateUnique(
-          'Recipe',
-          'name',
-          'Recipe name must be unique (case-insensitive).'
+          "Recipe",
+          "name",
+          "Recipe name must be unique (case-insensitive)."
         ),
         validatePattern(
           /^[A-Z][A-Za-z0-9'-,. ]+$/,
@@ -34,29 +34,32 @@ const recipeSchema = new mongoose.Schema(
         ),
       },
     ],
-    category: categoryItemSchema,
-    image: { type: String },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
 assignIncrementalId(recipeSchema);
 
-const recipeItemSchema = new mongoose.Schema(
-  {
-    id: {
-      type: Number,
-      ref: 'Recipe',
-      validate: {
-        async validator(value) {
-          return await validateIdExists('Recipe', value);
-        },
-        message: 'Recipe id does not exist',
-      },
-    },
-  },
-  { _id: false }
-);
+// const recipeItemSchema = new mongoose.Schema(
+//   {
+//     id: {
+//       type: Number,
+//       ref: "Recipe",
+//       validate: {
+//         async validator(value) {
+//           return await validateIfExists("Recipe", value);
+//         },
+//         message: "Recipe id does not exist",
+//       },
+//     },
+//   },
+//   { _id: false }
+// );
 
-export const Recipe = mongoose.model('Recipe', recipeSchema);
-export { recipeItemSchema };
+export default mongoose.model("Recipe", recipeSchema);
+// export { recipeItemSchema };
