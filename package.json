@@ -10,7 +10,6 @@
     "seed": "node src/seeds/index.js",
     "test": "mocha --timeout 10000 --file ./test/setup.js ./test/*.test.js",
     "format": "prettier --write .",
-    "seed": "node src/seeds/index.js",
     "seed-categories": "node src/seeds/categories.seed.js",
     "seed-ingredients": "node src/seeds/ingredients.seed.js",
     "seed-recipes": "node src/seeds/recipes.seed.js"
