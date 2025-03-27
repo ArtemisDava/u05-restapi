@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: express-api
+    env: node
+    buildCommand: npm install
+    startCommand: npm run start
+    instanceType: free
+    region: europe-west1
+    autoDeploy: true
