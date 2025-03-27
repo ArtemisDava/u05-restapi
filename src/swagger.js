@@ -51,7 +51,7 @@ const options = {
               description:"A URL to an image for the category",
             },
           },
-          // required:["name"],
+         
         },
         Ingredient: {
           type: "object",

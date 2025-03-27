@@ -1,4 +1,4 @@
-  // Utility function to transform category data
+// Utility function to transform category data
 
 const filterFields = (data, fields) => {
   let isObject = false;
