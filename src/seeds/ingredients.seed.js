@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Ingredient } from "../models/ingredient.model.js";
+import Ingredient from "../models/ingredient.model.js";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { dirname, join } from "path";

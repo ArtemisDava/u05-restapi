@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Recipe } from "../models/recipe.model.js";
+import Recipe from "../models/recipe.model.js";
 import seedIngredients from "./ingredients.seed.js";
 import seedCategories from "./categories.seed.js";
 import { fileURLToPath } from "url";
@@ -30,7 +30,7 @@ const recipeData = [
       "Drain pasta and immediately mix with egg mixture.",
       "Season with salt and pepper.",
     ],
-    category: { id: 1 }, // Italian
+    category: { id: 2 }, // Italian
     image: "https://example.com/images/carbonara.jpg",
   },
   {
@@ -77,13 +77,33 @@ const recipeData = [
 
 const seedRecipes = async () => {
   try {
-    // Clear existing recipes
+    const categories = await seedCategories();
+    const ingredients = await seedIngredients();
+
+    const categoryMap = categories.reduce((map, category) => {
+      map[category.id] = category._id;
+      return map;
+    }, {});
+
+    const ingredientMap = ingredients.reduce((map, ingredient) => {
+      map[ingredient.id] = ingredient._id;
+      return map;
+    }, {});
+
+    const updatedRecipeData = recipeData.map((recipe) => ({
+      ...recipe,
+      category: categoryMap[recipe.category.id],
+      ingredients: recipe.ingredients.map((ingredient) => ({
+        ingredient: ingredientMap[ingredient.id],
+        quantity: ingredient.quantity,
+        unit: ingredient.unit,
+      })),
+    }));
+
     await Recipe.deleteMany({});
-
-    // Insert new recipes
-    const recipes = await Recipe.insertMany(recipeData);
-
+    const recipes = await Recipe.insertMany(updatedRecipeData);
     console.log(`✅ Successfully seeded ${recipes.length} recipes`);
+
     return recipes;
   } catch (error) {
     console.error("❌ Error seeding recipes:", error);
@@ -92,18 +112,15 @@ const seedRecipes = async () => {
 };
 
 // Run the seed function if this file is executed directly
-// In ES modules, we check if the current file URL matches the executed file
 const isDirectlyExecuted = process.argv[1] === __filename;
 
 if (isDirectlyExecuted) {
-  await seedCategories();
-  await seedIngredients();
-
-  // Connect to the database
   mongoose
     .connect(process.env.MONGO_URI)
     .then(async () => {
       console.log("📊 Connected to MongoDB");
+      await seedCategories();
+      await seedIngredients();
       await seedRecipes();
       mongoose.connection.close();
     })
