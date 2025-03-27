@@ -3,7 +3,7 @@ import { assignIncrementalId } from "./utils/incrementalId.js";
 import {
   validatePattern,
   validateUnique,
-  validateIdExists,
+  validateIfExists,
 } from "./utils/validators.js";
 
 const categorySchema = new mongoose.Schema(
@@ -46,7 +46,7 @@ const categoryItemSchema = new mongoose.Schema(
       ref: "Category",
       validate: {
         async validator(value) {
-          return await validateIdExists("Category", value);
+          return await validateIfExists("Category", value);
         },
         message: "Category name does not exist",
       },

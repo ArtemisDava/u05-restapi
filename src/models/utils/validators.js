@@ -32,7 +32,7 @@ const validateUnique = function (modelName, fieldName, errorMessage) {
   };
 };
 
-const validateIdExists = async function (modelName, id) {
+const validateIfExists = async function (modelName, id) {
   try {
     const model = mongoose.models[modelName];
     if (!model) {
@@ -45,6 +45,4 @@ const validateIdExists = async function (modelName, id) {
   }
 };
 
-
-export { validatePattern, validateUnique, validateIdExists };
-
+export { validatePattern, validateUnique, validateIfExists };
