@@ -1,6 +1,5 @@
 import express from "express";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import cors from "cors";
 import { specs, swaggerUI } from "./swagger.js";
 import categoryRoutes from "./routes/category.routes.js";
