@@ -20,6 +20,7 @@ const start = async () => {
     server.on("error", async (error) => {
       if (error.code === "EADDRINUSE") {
         console.error(`Port ${PORT} is already in use`);
+        console.error("Server error:", error);
         // await new Promise(resolve => setTimeout(resolve, 1000));
         process.exit(1);
       } else {
