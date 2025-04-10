@@ -7,21 +7,12 @@ import categoryRoutes from "./routes/category.routes.js";
 import ingredientRoutes from "./routes/ingredient.routes.js";
 import recipeRoutes from "./routes/recipe.routes.js";
 // import userRoutes from "./routes/user.routes.js";
-import { connectDB } from "./database.js";
 
 // Initialize Express app
 const app = express();
 
-// Enable CORS
-app.use(cors());
-
-// Load environment variables
-dotenv.config();
-
-// Connect to database
-connectDB();
-
 // Middlewares
+app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
 
