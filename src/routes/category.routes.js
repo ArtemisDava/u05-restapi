@@ -1,29 +1,5 @@
-// import express from "express";
-// import categoryController from "../controllers/category.controller.js";
-// // import isAdminMiddleware from "../middleware/admin.middleware.js";
-
-// const router = express.Router();
-
-// // Protected routes for authenticated admins
-// router.put(
-//   "/v1/admin/categories/:categoryID",
-//   categoryController.updateCategory
-// );
-// router.delete(
-//   "/v1/admin/categories/:categoryID",
-//   categoryController.deleteCategory
-// );
-// router.post("/v1/admin/categories", categoryController.createCategory);
-
-// // Public routes
-// router.get("/v1/categories/:categoryID", categoryController.getCategoryById);
-// router.get("/v1/categories", categoryController.getCategories);
-
-// export default router;
-
 import express from "express";
 import categoryController from "../controllers/category.controller.js";
-// import isAdminMiddleware from "../middleware/admin.middleware.js";
 
 const router = express.Router();
 
@@ -34,11 +10,9 @@ const router = express.Router();
  *     summary: Create a new category
  *     description: |
  *       Create a new category:
- *       - This endpoint is **restricted** to admin users.
  *       - The category name must be **unique** and start with an uppercase letter.
  *       - Allowed characters: letters only. 
- *       
- *          Example: "Desserts"
+ * 
  *     tags: [Categories]
  *     parameters:
  *       - in: body
@@ -49,9 +23,9 @@ const router = express.Router();
  *           example: "Desserts"
  *         description: |
  *           The name of the category.  
- *           - **Must be unique.**  
- *           - **Must start with an uppercase letter.**  
- *           - **Allowed characters:** letters only.
+ *           - Must be unique.  
+ *           - Must start with an uppercase letter. 
+ *           - Allowed characters: letters only.
  *           
  *       - in: body
  *         name: description
@@ -67,9 +41,7 @@ const router = express.Router();
  *         schema:
  *           type: string
  *           example: "https://example.com/desserts.jpg"
- *         description: "must be a valid URL and end with one of the following extensions: png, jpg, jpeg, gif, svg"
- *    
- *      
+ *         description: "Must be a valid URL and end with one of the following extensions: png, jpg, jpeg, gif, svg"
  * 
  *     requestBody:
  *       required: true
@@ -95,8 +67,21 @@ const router = express.Router();
  *               image: "https://example.com/desserts.jpg"
  *       400:
  *         description: Invalid input (e.g., missing required fields)
- *       401:
- *         description: Unauthorized (Admin only)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
+ *             example:
+ *               success: false
+ *               error: "Name is required"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
+ *             example:
+ *               message: "Something went wrong!"
  */
 router.post("/v1/admin/categories", categoryController.createCategory);
 
@@ -106,10 +91,9 @@ router.post("/v1/admin/categories", categoryController.createCategory);
  *   put:
  *     summary: Update a category
  *     description: |
- *       Update an existing category (Admin only).  
+ *       Update an existing category.  
  *       - The **category ID** must be provided in the path.  
  *       - The request body must follow the Category schema.  
- *       - Only authorized admins can perform this action.
  *       
  *          Example categoryID: 1
  *     tags: [Categories]
@@ -119,6 +103,32 @@ router.post("/v1/admin/categories", categoryController.createCategory);
  *         required: true
  *         schema:
  *           type: string
+ * 
+ *       - in: body
+ *         name: name
+ *         required: false   
+ *         schema:
+ *           type: string
+ *           example: "Updated Category Name"
+ *         description: The new name of the category **must be unique** and start with an **uppercase letter**.
+ *      
+ *       - in: body
+ *         name: description
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "Updated category description"
+ *         description: The updated description of the category must start with an **uppercase letter**.
+ *      
+ *       - in: body
+ *         name: image
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "https://example.com/updated-image.jpg"
+ *         description: |
+ *           The updated image URL of the category must be a valid URL and end with one of the following extensions: png, jpg, jpeg, gif, svg.
+ 
  *     requestBody:
  *       required: true
  *       content:
@@ -140,10 +150,31 @@ router.post("/v1/admin/categories", categoryController.createCategory);
  *               image: "https://example.com/updated-image.jpg"
  *       400:
  *         description: Invalid input (e.g., missing required fields or incorrect format)
- *       401:
- *         description: Unauthorized (Admin only)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
+ *             example:
+ *               success: false
+ *               error: "Invalid ID 'format'"
  *       404:
  *         description: Category not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
+ *             example:
+ *               success: false
+ *               error: "Category categoryID not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Category'
+ *              example:
+ *                success: false
+ *                error: "Category validation failed: name: Category name must start with an uppercase letter and contain only letters."
  */
 router.put(
   "/v1/admin/categories/:categoryID",
@@ -155,7 +186,7 @@ router.put(
  * /v1/admin/categories/{categoryID}:
  *   delete:
  *     summary: Delete a category
- *     description: Delete an existing category (Admin only)
+ *     description: Delete an existing category.
  *     tags: [Categories]
  *     parameters:
  *       - in: path
@@ -164,12 +195,34 @@ router.put(
  *         schema:
  *           type: string
  *     responses:
- *       204:
+ *       200:
  *         description: Category deleted successfully
- *       401:
- *         description: Unauthorized (Admin only)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category/{categoryID}'
+ *             example:
+ *               "success": true
+ *               "count": 1 
+ * 
+ *       400:
+ *         description: Bad Request 
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category/{categoryID}'
+ *             example:
+ *               "success": false
+ *               "error": "Category categoryID is used in 1 recipes."
  *       404:
  *         description: Category not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category/{categoryID}'
+ *             example:
+ *               "success": false
+ *               "error": "Category categoryID not found"
  */
 router.delete(
   "/v1/admin/categories/:categoryID",
@@ -189,9 +242,29 @@ router.delete(
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Category'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Category'
+ *             example: 
+ *               success: true 
+ *               count: 2
+ *               data:
+ *                 - id: 1
+ *                   name: "Italian"
+ *                   image: "https://example.com/images/italian.jpg"
+ *                   description: "Traditional Italian cuisine featuring pasta, pizza, and Mediterranean flavors." 
+ *                 - id: 2
+ *                   name: "Mexican"
+ *                   image: "https://example.com/images/mexican.jpg"
+ *                   description: "Bold and spicy Mexican dishes with corn, beans, and chili peppers."      
+ *            
  */
 router.get("/v1/categories", categoryController.getCategories);
 
@@ -204,19 +277,48 @@ router.get("/v1/categories", categoryController.getCategories);
  *     tags: [Categories]
  *     parameters:
  *       - in: path
- *         name: categoryID
+ *         name: id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
+ *         description: The categoryID
  *     responses:
  *       200:
  *         description: A single category
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Category'
+ *             example:
+ *               success: true
+ *               data: 
+ *                 id: 1
+ *                 name: "Italian"
+ *                 image: "https://example.com/images/italian.jpg"
+ *                 description: "Traditional Italian cuisine featuring pasta, pizza, and Mediterranean flavors."
+ *       400:
+ *         description: Invalid ID format
+ *         content:
+ *           application/json:
+ *             schema:
  *               $ref: '#/components/schemas/Category'
+ *             example:
+ *               success: false
+ *               error: "Invalid ID 'format'"
  *       404:
  *         description: Category not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
+ *             example:
+ *               success: false
+ *               error: "Category categoryID not found"
  */
 router.get("/v1/categories/:categoryID", categoryController.getCategoryById);
 
