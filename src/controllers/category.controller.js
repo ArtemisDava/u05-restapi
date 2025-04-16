@@ -1,10 +1,9 @@
 import Category from "../models/category.model.js";
 import Recipe from "../models/recipe.model.js";
-import { checkIfExists, parseId } from "./utils/validators.js";
+import { checkIfExists, convertToCapitalizedLetter, convertToCapitalizedLetters, parseId, sanitizeName, sanitizeDescription } from "./utils/validators.js";
 import errorHandler from "./utils/error.js";
 import filterFields from "./utils/transform-data.js";
-
-// TO-DO: sanitize inputs
+import e from "express";
 
 const fields = ["id", "name", "image", "description"];
 
@@ -54,22 +53,38 @@ const categoryController = {
     try {
       const { name, image, description } = req.body;
 
-      // TO-DO: sanitize inputs (name, image, description, _id)
-
+      // Validate required name field
       if (!name) return errorHandler(res, 400, "Name is required");
+ 
+      // Sanitize name
+      const nameValidation = sanitizeName(name, 'Name');
+      if (nameValidation.message)
+        return errorHandler(res, 400, nameValidation.message);
 
-      // Check if name already exists
-      let exists = await checkIfExists(Category, { name });
+      // Process name to be capitalized
+      const transformedName = convertToCapitalizedLetters(name);
+      
+      // Check if category already exists
+      let exists = await checkIfExists(Category, { name: transformedName });
       if (exists)
-        return errorHandler(res, 400, `Category '${name}' already exists`);
+        return errorHandler(res, 400, `Category '${transformedName}' already exists`);
+      
+      // If description is provided, sanitize it
+      let transformedDescription = '';
+      if (description){
+        const descValidation = sanitizeDescription(description, 'Description');
+        if (descValidation.message){
+          return errorHandler(res, 400, descValidation.message);
+        }
+        transformedDescription = convertToCapitalizedLetter(description);
+      }
 
-      // Create new category
       const category = new Category({
-        name,
-        image,
-        description,
+        name: transformedName,
+        image: image || undefined,
+        description: transformedDescription || undefined,
       });
-
+ 
       try {
         await category.save();
       } catch (error) {
@@ -93,25 +108,56 @@ const categoryController = {
 
     try {
       const { name, image, description } = req.body;
-
       const category = await Category.findOne({ id: categoryId });
+
       if (!category)
         return errorHandler(res, 404, `Category: '${categoryId}' not found`);
 
-      if (name) {
-        let exists = await checkIfExists(Category, { name });
+     if(name !== undefined) {
+      const nameValidation = sanitizeName(name, 'Name');
+      if (nameValidation.message) {
+        return errorHandler(res, 400, nameValidation.message);
+      }
+
+      // Process name to be capitalized
+      const transformedName = convertToCapitalizedLetters(nameValidation.sanitized);
+    
+      
+      try {
+        const exists = await checkIfExists(Category, { 
+          name: transformedName, 
+          id: { $ne: categoryId } 
+        });
         if (exists) {
           return errorHandler(
             res,
             400,
-            `'${name}' matches an existing category name!`
+            `'${transformedName}' matches an existing category name!`
           );
         }
-        category.name = name;
+        category.name = transformedName;
+      } catch (dbError) {
+        return errorHandler(res, 500, 'Error checking category name');
       }
-
-      category.image = image ?? category.image;
-      category.description = description ?? category.description;
+    }
+      // Handle description update
+      if (description !== undefined) {
+        if (description === '') {
+          category.description = '';
+        } else {
+        const descValidation = sanitizeDescription(description, 'Description');
+        if (descValidation.message){
+          return errorHandler(res, 400, descValidation.message);
+        }
+        const transformedDescription = convertToCapitalizedLetter(descValidation.sanitized);
+        category.description = transformedDescription;
+      }
+     }
+      
+      // Handle image update
+      if (image !== undefined) {
+        category.image = image || null;
+      }
 
       try {
         await category.save();
