@@ -13,7 +13,7 @@ const validateUnique = function (modelName, fieldName, errorMessage) {
   return {
     async validator(value) {
       const lowerCaseValue = value.toLowerCase();
-
+      
       // Check if another document with the same lowercase field value exists
       const existingDocument = await mongoose.models[modelName].findOne({
         [fieldName]: { $regex: new RegExp(`^${lowerCaseValue}$`, "i") }, // Case-insensitive regex
