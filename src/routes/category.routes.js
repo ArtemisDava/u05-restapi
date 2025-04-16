@@ -84,7 +84,8 @@ const router = express.Router();
  *         description: |
  *           Bad Request - Invalid input due to:
  *           - Missing required fields (name)
- *           - Name not starting with uppercase letter (fixakoden)
+ *           - Name containing invalid characters
+ *           - Description containing invalid characters
  *           - Duplicate category name (names must be unique)
  *           - Invalid image URL (must be a valid URL ending with .png, .jpg, .jpeg or .gif)
  *       500:
@@ -182,7 +183,8 @@ router.post("/v1/admin/categories", categoryController.createCategory);
  *           - Malformed categoryID (must be a valid string ID)
  *           - Duplicate category name (names must be unique)
  *           - Invalid image URL (must be a valid URL ending with .png, .jpg, .jpeg or .gif) (fixakoden)
- *           - Name not starting with uppercase letter (fixakoden)
+ *           - Name containing invalid characters
+ *           - Description containing invalid characters
  *       404:
  *         description: |
  *           Not Found - Category not found:
