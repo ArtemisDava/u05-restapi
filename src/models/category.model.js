@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { assignIncrementalId } from "./utils/incrementalId.js";
 import {
-  validatePattern,
   validateUnique,
   validateIfExists,
 } from "./utils/validators.js";
@@ -17,21 +16,13 @@ const categorySchema = new mongoose.Schema(
         validateUnique(
           "Category",
           "name",
-          "Category name must be unique (case-insensitive)."
-        ),
-        validatePattern(
-          /^[A-Z][a-z]+$/,
-          "Category name must start with an uppercase letter and contain only letters."
+          "Category name exists already, it must be unique."
         ),
       ],
     },
     image: { type: String },
     description: {
       type: String,
-      validate: validatePattern(
-        /^[a-zA-Z0-9'-., ]+$/,
-        "Description must contain only letters, numbers, and the following special characters: - . , '"
-      ),
     },
   },
   { timestamps: true }
