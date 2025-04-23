@@ -3,6 +3,7 @@ import { assignIncrementalId } from "./utils/incrementalId.js";
 import {
   validateUnique,
   validateIfExists,
+  validatePattern,
 } from "./utils/validators.js";
 
 const categorySchema = new mongoose.Schema(
@@ -20,7 +21,13 @@ const categorySchema = new mongoose.Schema(
         ),
       ],
     },
-    image: { type: String },
+    image: { 
+      type: String,
+      validate: validatePattern(
+              /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))$/,
+              "Image URL must be a valid URL 'https://' and end with one of the following extensions: png, jpg, jpeg, gif, svg"
+            ),
+     },
     description: {
       type: String,
     },
