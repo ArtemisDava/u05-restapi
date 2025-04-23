@@ -29,10 +29,6 @@ const ingredientSchema = new mongoose.Schema(
           "name",
           "Ingredient name must be unique (case-insensitive)."
         ),
-        // validatePattern(
-        //   /^[A-Z][a-z]+$/,
-        //   "Ingredient name must start with an uppercase letter and contain only letters."
-        // ),
       ],
     },
     image: {
