@@ -25,10 +25,6 @@ const router = express.Router();
  *               name:
  *                 type: string
  *                 description: Unique name of the ingredient
- *               description:
- *                 type: string
- *                 description: Description of the ingredient
- *                 nullable: true
  *               image:
  *                 type: string
  *                 description: "URL must end with: .png, .jpg, .jpeg, .gif, or .svg"
@@ -118,9 +114,6 @@ router.post("/v1/admin/ingredients", ingredientController.createIngredient);
  *               name:
  *                 type: string
  *                 description: New unique name of the ingredient
- *               description:
- *                 type: string
- *                 description: New description of the ingredient
  *               image:
  *                 type: string
  *                 format: uri
@@ -132,7 +125,7 @@ router.post("/v1/admin/ingredients", ingredientController.createIngredient);
  *           application/json:
  *             schema:
  *               type: object
- *               required: [success,data]
+ *               required: [success, data]
  *               properties:
  *                 success:
  *                   type: boolean
@@ -168,13 +161,13 @@ router.post("/v1/admin/ingredients", ingredientController.createIngredient);
  *             example:
  *               success: true
  *               data:
- *               _id: "5f8d0c9b8c8d3e001f8e4a1b"
- *               id: 1
- *               name: "Updated Ingredient"
- *               image: "https://example.com/images/updated_ingredient.jpg"
- *               __v: 0
- *               createdAt: "2023-10-01T12:00:00Z"
- *               updatedAt: "2023-10-01T12:00:00Z"
+ *                 _id: "5f8d0c9b8c8d3e001f8e4a1b"
+ *                 id: 1
+ *                 name: "Updated Ingredient"
+ *                 image: "https://example.com/images/updated_ingredient.jpg"
+ *                 __v: 0
+ *                 createdAt: "2023-10-01T12:00:00Z"
+ *                 updatedAt: "2023-10-01T12:00:00Z"
  *       400:
  *         description: |
  *           Bad Request - Invalid input due to:

@@ -3,7 +3,6 @@ import Recipe from "../models/recipe.model.js";
 import { checkIfExists, convertToCapitalizedLetter, convertToCapitalizedLetters, parseId, sanitizeName, sanitizeDescription } from "./utils/validators.js";
 import errorHandler from "./utils/error.js";
 import filterFields from "./utils/transform-data.js";
-import e from "express";
 
 const fields = ["id", "name", "image", "description"];
 
@@ -108,7 +107,7 @@ const categoryController = {
 
     try {
       const { name, image, description } = req.body;
-      const category = await Category.findOne({ id: categoryId });
+      let category = await Category.findOne({ id: categoryId });
 
       if (!category)
         return errorHandler(res, 404, `Category: '${categoryId}' not found`);
@@ -156,7 +155,7 @@ const categoryController = {
       
       // Handle image update
       if (image !== undefined) {
-        category.image = image || null;
+        category.image = image ?? category.image;
       }
 
       try {
@@ -175,7 +174,7 @@ const categoryController = {
     let categoryId = req.params.categoryID;
 
     try {
-      categoryId = parseId(req.params.categoryID);
+      categoryId = parseId(categoryId);
     } catch (error) {
       return errorHandler(res, 400, error);
     }

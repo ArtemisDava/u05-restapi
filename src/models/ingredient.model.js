@@ -29,17 +29,17 @@ const ingredientSchema = new mongoose.Schema(
           "name",
           "Ingredient name must be unique (case-insensitive)."
         ),
-        validatePattern(
-          /^[A-Z][a-z]+$/,
-          "Ingredient name must start with an uppercase letter and contain only letters."
-        ),
+        // validatePattern(
+        //   /^[A-Z][a-z]+$/,
+        //   "Ingredient name must start with an uppercase letter and contain only letters."
+        // ),
       ],
     },
     image: {
       type: String,
       validate: validatePattern(
         /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))$/,
-        "Image URL must be a valid URL and end with one of the following extensions: png, jpg, jpeg, gif, svg"
+        "Image URL must be a valid URL 'https://' and end with one of the following extensions: png, jpg, jpeg, gif, svg"
       ),
     },
   },
@@ -47,21 +47,6 @@ const ingredientSchema = new mongoose.Schema(
 );
 
 assignIncrementalId(ingredientSchema);
-
-// const ingredientItemSchema = new mongoose.Schema(
-//   {
-//     id: {
-//       type: Number,
-//       validate: {
-//         validator: async function (value) {
-//           return await validateIfExists("Ingredient", value);
-//         },
-//         message: "Ingredient id does not exist",
-//       },
-//     },
-//   },
-//   { _id: false }
-// );
 
 export default mongoose.model("Ingredient", ingredientSchema);
 export { ingredientQuantitySchema };
