@@ -16,10 +16,6 @@ const recipeSchema = new mongoose.Schema(
           "name",
           "Recipe name must be unique (case-insensitive)."
         ),
-        validatePattern(
-          /^[A-Z][A-Za-z0-9'-,. ]+$/,
-          "Recipe name must start with an uppercase letter and contain only letters, numbers, and the following special characters: - , . '"
-        ),
       ],
     },
     ingredients: [ingredientQuantitySchema],
@@ -45,21 +41,4 @@ const recipeSchema = new mongoose.Schema(
 
 assignIncrementalId(recipeSchema);
 
-// const recipeItemSchema = new mongoose.Schema(
-//   {
-//     id: {
-//       type: Number,
-//       ref: "Recipe",
-//       validate: {
-//         async validator(value) {
-//           return await validateIfExists("Recipe", value);
-//         },
-//         message: "Recipe id does not exist",
-//       },
-//     },
-//   },
-//   { _id: false }
-// );
-
 export default mongoose.model("Recipe", recipeSchema);
-// export { recipeItemSchema };
