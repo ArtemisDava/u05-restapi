@@ -1,11 +1,7 @@
-import Category from "../models/category.model.js";
 import Recipe from "../models/recipe.model.js";
-import Ingredient from "../models/ingredient.model.js";
-import { checkIfExists, parseId } from "./utils/validators.js";
+import { checkIfExists, parseId, convertToCapitalizedLetters, sanitizeName, sanitizeDescription, convertToCapitalizedLetter } from "./utils/validators.js";
 import errorHandler from "./utils/error.js";
 import filterFields from "./utils/transform-data.js";
-
-// TO-DO: sanitize inputs
 
 const fields = [
   "id",
@@ -44,8 +40,7 @@ const RecipeController = {
     try {
       let recipe = await Recipe.findOne({ id: recipeId });
       if (!recipe) {
-        errorHandler(res, 404, `Recipe: '${recipeId}' not found`);
-        return;
+        return errorHandler(res, 404, `Recipe: '${recipeId}' not found`);
       }
 
       recipe = filterFields(recipe, fields);
@@ -55,7 +50,7 @@ const RecipeController = {
         data: recipe,
       });
     } catch (error) {
-      errorHandler(res, 500, `Fetching recipe '${recipeId}'`);
+      return errorHandler(res, 500, `Fetching recipe '${recipeId}'`);
     }
   },
 
@@ -64,39 +59,45 @@ const RecipeController = {
       const { name, ingredients, alternatives, instructions, category } =
         req.body;
 
-      if (!name || !instructions || !category || !ingredients) {
-        errorHandler(
-          res,
-          400,
-          "Name, ingredients, instructions, and category are required"
-        );
-        return;
-      }
+      if (!name || !instructions || !category || !ingredients) 
+        return errorHandler(res, 400, "Name, ingredients, instructions, and category are required");
 
-      let exists = await checkIfExists(Recipe, { name });
-      if (exists) {
-        errorHandler(res, 400, `Recipe '${name}' already exists`);
-        return;
-      }
+      if (!Array.isArray(ingredients) || ingredients.length === 0)
+        return errorHandler(res, 400, "Ingredients must be an array and cannot be empty");
 
+      const nameValidation = sanitizeName(name, "Recipe name");
+      if (nameValidation.message) 
+        return errorHandler(res, 400, nameValidation.message);
+      
+      
+
+      const transformedName = convertToCapitalizedLetters(name);
+      
+
+      let exists = await checkIfExists(Recipe, { name: transformedName });
+      if (exists) 
+        return errorHandler(res, 400, `Recipe '${transformedName}' already exists`);
+
+      
       // Create new recipe
       const recipe = new Recipe({
-        name,
+        name: transformedName,
         ingredients,
-        alternatives,
-        instructions,
+        alternatives: alternatives || [],
+        instructions: instructions,
         category,
       });
 
+      try {
       await recipe.save();
+      } catch (error) {
+        return errorHandler(res, 500, error.message);
+      }
 
-      res.status(201).json({
-        success: true,
-        data: recipe,
-      });
+      res.status(201).json({ success: true, data: recipe });
     } catch (error) {
-      //To-do: decide an error message for all controllers
-      errorHandler(res, 500, "creating recipe");
+      console.error(error);
+      return errorHandler(res, 500, "creating recipe");
     }
   },
 
@@ -118,35 +119,75 @@ const RecipeController = {
         return;
       }
 
-      if (name) {
-        let exists = await checkIfExists(Recipe, { name });
+      if (name !== undefined) {
+        const nameValidation = sanitizeName(name, "Recipe name");
+        if (nameValidation.message) {
+          return errorHandler(res, 400, nameValidation.message);
+       }
+        
+
+        // Process name to be capitalized
+        const transformedName = convertToCapitalizedLetters(nameValidation.sanitized);
+
+        try {
+        const exists = await checkIfExists(Recipe, { 
+          name: transformedName, 
+          id: { $ne: recipeId } 
+        });
         if (exists) {
-          errorHandler(
+          return errorHandler(
             res,
             400,
-            `Recipe '${name}' matches an existing recipe name!`
+            `Recipe '${transformedName}' matches an existing recipe name!`
           );
-          return;
         }
 
-        recipe.name = name;
+        recipe.name = transformedName;
+       } catch (error) {
+        return errorHandler(res, 500, error.message);
+       }
       }
-      recipe.ingredients = ingredients ?? recipe.ingredients;
-      recipe.alternatives = alternatives ?? recipe.alternatives;
-      recipe.instructions = instructions ?? recipe.instructions;
-      recipe.category = category ?? recipe.category;
 
-      // check if i need a try catch here.
+      if (ingredients !== undefined) {
+        if (!Array.isArray(ingredients) || ingredients.length === 0) {
+          return errorHandler(res, 400, "Ingredients must be an array and cannot be empty");
+        }
+        recipe.ingredients = ingredients ?? recipe.ingredients;
+      }
+
+      if (alternatives !== undefined) {
+        if (!Array.isArray(alternatives)) {
+          return errorHandler(res, 400, "Alternatives must be an array");
+        }
+        recipe.alternatives = alternatives ?? recipe.alternatives;
+      }
+
+      if (instructions !== undefined) {
+        if (!Array.isArray(instructions)) {
+          return errorHandler(res, 400, "Instructions must be an array");
+        }
+        recipe.instructions = instructions ?? recipe.instructions;
+      }
+
+      if (category !== undefined) {
+        recipe.category = category ?? recipe.category;
+      }
+
+      try {
       await recipe.save();
+      } catch (error) {
+        return errorHandler(res, 500, error.message);
+      }
 
       res.status(200).json({
         success: true,
         data: recipe,
       });
     } catch (error) {
-      errorHandler(res, 500, `Updating recipe '${recipeId}'`);
+      return errorHandler(res, 500, `Updating recipe '${recipeId}'`);
     }
   },
+
   deleteRecipe: async (req, res) => {
     let recipeId = req.params.recipeID;
     try {
@@ -154,9 +195,6 @@ const RecipeController = {
     } catch (error) {
       return errorHandler(res, 400, error);
     }
-
-    // const recipeId = parseId(req, res, "recipeID");
-    // if (recipeId === null) return;
 
     try {
       const recipe = await Recipe.findOne({ id: recipeId });
