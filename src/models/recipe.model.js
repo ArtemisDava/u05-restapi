@@ -18,6 +18,13 @@ const recipeSchema = new mongoose.Schema(
         ),
       ],
     },
+    image: {
+      type: String,
+      validate: validatePattern(
+        /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp|svg))$/i,
+        "Image URL must be a valid image URL."
+      ),
+    },
     ingredients: [ingredientQuantitySchema],
     alternatives: [ingredientQuantitySchema],
     instructions: [
