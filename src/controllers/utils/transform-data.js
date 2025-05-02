@@ -1,5 +1,3 @@
-// Utility function to transform category data
-
 const filterFields = (data, fields) => {
   let isObject = false;
   if (!Array.isArray(data)) {
@@ -10,9 +8,17 @@ const filterFields = (data, fields) => {
   data = data.map((item) => {
     const newItem = {};
     fields.forEach((field) => {
-      newItem[field] = item[field];
+      if (field === "ingredients" && Array.isArray(item.ingredients)) {
+        newItem.ingredients = item.ingredients.map((i) => ({
+          name: i.ingredient?.name || "",
+          ingredient: i.ingredient?._id || i.ingredient,
+          quantity: i.quantity,
+          unit: i.unit,
+        }));
+      } else {
+        newItem[field] = item[field];
+      }
     });
-
     return newItem;
   });
 
