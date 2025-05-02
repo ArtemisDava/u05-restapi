@@ -10,12 +10,13 @@ const fields = [
   "alternatives",
   "instructions",
   "category",
+  "image",
 ];
 
 const RecipeController = {
   getRecipes: async (_, res) => {
     try {
-      let recipes = await Recipe.find({}).sort({ name: 1 });
+      let recipes = await Recipe.find({}).populate("ingredients.ingredient", "name").sort({ name: 1 });
 
       recipes = filterFields(recipes, fields);
 
@@ -38,7 +39,8 @@ const RecipeController = {
     }
 
     try {
-      let recipe = await Recipe.findOne({ id: recipeId });
+      let recipe = await Recipe.findOne({ id: recipeId })
+      .populate("ingredients.ingredient", "name");
       if (!recipe) {
         return errorHandler(res, 404, `Recipe: '${recipeId}' not found`);
       }
@@ -56,11 +58,11 @@ const RecipeController = {
 
   createRecipe: async (req, res) => {
     try {
-      const { name, ingredients, alternatives, instructions, category } =
+      const { name, ingredients, alternatives, instructions, category, image } =
         req.body;
 
-      if (!name || !instructions || !category || !ingredients) 
-        return errorHandler(res, 400, "Name, ingredients, instructions, and category are required");
+      if (!name || !instructions || !category || !ingredients || image) 
+        return errorHandler(res, 400, "Name, ingredients, instructions, image and category are required");
 
       if (!Array.isArray(ingredients) || ingredients.length === 0)
         return errorHandler(res, 400, "Ingredients must be an array and cannot be empty");
@@ -86,6 +88,7 @@ const RecipeController = {
         alternatives: alternatives || [],
         instructions: instructions,
         category,
+        image,
       });
 
       try {
@@ -110,7 +113,7 @@ const RecipeController = {
     }
 
     try {
-      const { name, ingredients, alternatives, instructions, category } =
+      const { name, ingredients, alternatives, instructions, category, image } =
         req.body;
 
       const recipe = await Recipe.findOne({ id: recipeId });
@@ -171,6 +174,10 @@ const RecipeController = {
 
       if (category !== undefined) {
         recipe.category = category ?? recipe.category;
+      }
+
+      if (image !== undefined) {
+        recipe.image = image ?? recipe.image;
       }
 
       try {
