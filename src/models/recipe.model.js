@@ -21,8 +21,8 @@ const recipeSchema = new mongoose.Schema(
     image: {
       type: String,
       validate: validatePattern(
-        /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp|svg))$/i,
-        "Image URL must be a valid image URL."
+        /^(https?:\/\/.*\.(?:png|jpg|jpeg|webp|svg))$/i,
+        "Image URL must be a valid image URL. \n\nImage URL must start with 'https://', \nand end with: .png, .jpg, .jpeg, .webp or .svg"
       ),
     },
     ingredients: [ingredientQuantitySchema],
