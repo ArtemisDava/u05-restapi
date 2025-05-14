@@ -1,10 +1,15 @@
 import Ingredient from "../models/ingredient.model.js";
 import Recipe from "../models/recipe.model.js";
-import { checkIfExists, parseId, convertToCapitalizedLetters, sanitizeName  } from "./utils/validators.js";
+import {
+  checkIfExists,
+  parseId,
+  convertToCapitalizedLetters,
+  sanitizeName,
+} from "./utils/validators.js";
 import errorHandler from "./utils/error.js";
 import filterFields from "./utils/transform-data.js";
 
-const fields = ["id", "name", "image"];
+const fields = ["id", "name", "image", "_id"];
 
 const ingredientController = {
   getIngredients: async (_, res) => {
@@ -54,11 +59,11 @@ const ingredientController = {
     try {
       const { name, image } = req.body;
 
-       // Validate required name field
+      // Validate required name field
       if (!name) return errorHandler(res, 400, "Name is required");
 
       // Sanitize name
-      const nameValidation = sanitizeName(name, 'Name');
+      const nameValidation = sanitizeName(name, "Name");
       if (nameValidation.message)
         return errorHandler(res, 400, nameValidation.message);
 
@@ -67,21 +72,23 @@ const ingredientController = {
 
       // Check if ingredient name already exists
       let exists = await checkIfExists(Ingredient, { name: transformedName });
-      if (exists) 
-        return errorHandler(res, 400, `Ingredient '${transformedName}' already exists`);
-       
-    
+      if (exists)
+        return errorHandler(
+          res,
+          400,
+          `Ingredient '${transformedName}' already exists`
+        );
+
       // Create new ingredient
       const ingredient = new Ingredient({
         name: transformedName,
         image: image || undefined,
       });
-try {
-      await ingredient.save();
-    } catch (error) {
-      return errorHandler(res, 500, error.message);
-    }
-      
+      try {
+        await ingredient.save();
+      } catch (error) {
+        return errorHandler(res, 500, error.message);
+      }
 
       res.status(201).json({ success: true, data: ingredient });
     } catch (error) {
@@ -101,12 +108,15 @@ try {
     try {
       const { name, image } = req.body;
       let ingredient = await Ingredient.findOne({ id: ingredientId });
-      if (!ingredient) 
-        return errorHandler(res, 404, `Ingredient: '${ingredientId}' not found`);
-     
+      if (!ingredient)
+        return errorHandler(
+          res,
+          404,
+          `Ingredient: '${ingredientId}' not found`
+        );
 
       if (name !== undefined) {
-        const nameValidation = sanitizeName(name, 'Name');
+        const nameValidation = sanitizeName(name, "Name");
         if (nameValidation.message) {
           return errorHandler(res, 400, nameValidation.message);
         }
@@ -115,33 +125,40 @@ try {
 
         // Check if ingredient name already exists
         try {
-        let exists = await checkIfExists(Ingredient, { 
-          name: transformedName, 
-          id: { $ne: ingredientId } 
-        });
-        if (exists) {
-          return errorHandler(res, 400, `Ingredient '${name}' matches an existing ingredient name!`);
+          let exists = await checkIfExists(Ingredient, {
+            name: transformedName,
+            id: { $ne: ingredientId },
+          });
+          if (exists) {
+            return errorHandler(
+              res,
+              400,
+              `Ingredient '${name}' matches an existing ingredient name!`
+            );
+          }
+          ingredient.name = transformedName;
+        } catch (error) {
+          return errorHandler(res, 500, error.message);
         }
-        ingredient.name = transformedName;
-      } catch (error) {
-        return errorHandler(res, 500, error.message);
-      } 
-    }
+      }
 
-      if (image !== undefined){
+      if (image !== undefined) {
         ingredient.image = image ?? ingredient.image;
       }
       try {
-      await ingredient.save();
-    }
-    catch (error) {
-      return errorHandler(res, 500, error.message);
-    }
+        await ingredient.save();
+      } catch (error) {
+        return errorHandler(res, 500, error.message);
+      }
 
       res.status(200).json({ success: true, data: ingredient });
     } catch (error) {
       //read more about this catch block
-      return errorHandler(res, 500, error.message || `Updating ingredient '${ingredientId}'`);
+      return errorHandler(
+        res,
+        500,
+        error.message || `Updating ingredient '${ingredientId}'`
+      );
     }
   },
 
@@ -157,7 +174,11 @@ try {
     try {
       const ingredient = await Ingredient.findOne({ id: ingredientId });
       if (!ingredient) {
-        return errorHandler(res, 404, `Ingredient: '${ingredientId}' not found`);
+        return errorHandler(
+          res,
+          404,
+          `Ingredient: '${ingredientId}' not found`
+        );
       }
       const recipeUsingIngredient = await Recipe.countDocuments({
         "ingredients.ingredient": ingredient._id,
