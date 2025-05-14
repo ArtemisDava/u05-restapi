@@ -1,10 +1,17 @@
 import Category from "../models/category.model.js";
 import Recipe from "../models/recipe.model.js";
-import { checkIfExists, convertToCapitalizedLetter, convertToCapitalizedLetters, parseId, sanitizeName, sanitizeDescription } from "./utils/validators.js";
+import {
+  checkIfExists,
+  convertToCapitalizedLetter,
+  convertToCapitalizedLetters,
+  parseId,
+  sanitizeName,
+  sanitizeDescription,
+} from "./utils/validators.js";
 import errorHandler from "./utils/error.js";
 import filterFields from "./utils/transform-data.js";
 
-const fields = ["id", "name", "image", "description"];
+const fields = ["id", "name", "image", "description", "_id"];
 
 const categoryController = {
   getCategories: async (_, res) => {
@@ -37,9 +44,8 @@ const categoryController = {
       if (!category)
         return errorHandler(res, 404, `Category: '${categoryId}' not found`);
 
-      category = filterFields(category, fields);
-
-      res.status(200).json({
+      // category = filterFields(category, fields);
+      category = res.status(200).json({
         success: true,
         data: category,
       });
@@ -54,25 +60,29 @@ const categoryController = {
 
       // Validate required name field
       if (!name) return errorHandler(res, 400, "Name is required");
- 
+
       // Sanitize name
-      const nameValidation = sanitizeName(name, 'Name');
+      const nameValidation = sanitizeName(name, "Name");
       if (nameValidation.message)
         return errorHandler(res, 400, nameValidation.message);
 
       // Process name to be capitalized
       const transformedName = convertToCapitalizedLetters(name);
-      
+
       // Check if category already exists
       let exists = await checkIfExists(Category, { name: transformedName });
       if (exists)
-        return errorHandler(res, 400, `Category '${transformedName}' already exists`);
-      
+        return errorHandler(
+          res,
+          400,
+          `Category '${transformedName}' already exists`
+        );
+
       // If description is provided, sanitize it
-      let transformedDescription = '';
-      if (description){
-        const descValidation = sanitizeDescription(description, 'Description');
-        if (descValidation.message){
+      let transformedDescription = "";
+      if (description) {
+        const descValidation = sanitizeDescription(description, "Description");
+        if (descValidation.message) {
           return errorHandler(res, 400, descValidation.message);
         }
         transformedDescription = convertToCapitalizedLetter(description);
@@ -83,7 +93,7 @@ const categoryController = {
         image: image || undefined,
         description: transformedDescription || undefined,
       });
- 
+
       try {
         await category.save();
       } catch (error) {
@@ -112,47 +122,53 @@ const categoryController = {
       if (!category)
         return errorHandler(res, 404, `Category: '${categoryId}' not found`);
 
-     if(name !== undefined) {
-      const nameValidation = sanitizeName(name, 'Name');
-      if (nameValidation.message) {
-        return errorHandler(res, 400, nameValidation.message);
-      }
-
-      // Process name to be capitalized
-      const transformedName = convertToCapitalizedLetters(nameValidation.sanitized);
-    
-      
-      try {
-        const exists = await checkIfExists(Category, { 
-          name: transformedName, 
-          id: { $ne: categoryId } 
-        });
-        if (exists) {
-          return errorHandler(
-            res,
-            400,
-            `'${transformedName}' matches an existing category name!`
-          );
+      if (name !== undefined) {
+        const nameValidation = sanitizeName(name, "Name");
+        if (nameValidation.message) {
+          return errorHandler(res, 400, nameValidation.message);
         }
-        category.name = transformedName;
-      } catch (dbError) {
-        return errorHandler(res, 500, 'Error checking category name');
+
+        // Process name to be capitalized
+        const transformedName = convertToCapitalizedLetters(
+          nameValidation.sanitized
+        );
+
+        try {
+          const exists = await checkIfExists(Category, {
+            name: transformedName,
+            id: { $ne: categoryId },
+          });
+          if (exists) {
+            return errorHandler(
+              res,
+              400,
+              `'${transformedName}' matches an existing category name!`
+            );
+          }
+          category.name = transformedName;
+        } catch (dbError) {
+          return errorHandler(res, 500, "Error checking category name");
+        }
       }
-    }
       // Handle description update
       if (description !== undefined) {
-        if (description === '') {
-          category.description = '';
+        if (description === "") {
+          category.description = "";
         } else {
-        const descValidation = sanitizeDescription(description, 'Description');
-        if (descValidation.message){
-          return errorHandler(res, 400, descValidation.message);
+          const descValidation = sanitizeDescription(
+            description,
+            "Description"
+          );
+          if (descValidation.message) {
+            return errorHandler(res, 400, descValidation.message);
+          }
+          const transformedDescription = convertToCapitalizedLetter(
+            descValidation.sanitized
+          );
+          category.description = transformedDescription;
         }
-        const transformedDescription = convertToCapitalizedLetter(descValidation.sanitized);
-        category.description = transformedDescription;
       }
-     }
-      
+
       // Handle image update
       if (image !== undefined) {
         category.image = image ?? category.image;
