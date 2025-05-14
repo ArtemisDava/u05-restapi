@@ -13,7 +13,7 @@ const filterFields = (data, fields) => {
           name: i.ingredient?.name || "",
           ingredient: i.ingredient?._id || i.ingredient,
           quantity: i.quantity,
-          unit: i.unit,
+          unit: i.unit || "",
         }));
       } else {
         newItem[field] = item[field];
